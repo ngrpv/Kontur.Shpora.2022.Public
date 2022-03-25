@@ -8,10 +8,11 @@ public class MyReaderWriterLock : IRwLock
     private object readerLock = new();
     private int readersCounter;
     private AutoResetEvent resetEvent = new(true);
+    private ManualResetEvent manualResetEvent = new(true);
 
     public void ReadLocked(Action action)
     {
-       // resetEvent.WaitOne();
+        manualResetEvent.WaitOne();
         lock (readerLock)
         {
             readersCounter++;
@@ -34,9 +35,10 @@ public class MyReaderWriterLock : IRwLock
 
     public void WriteLocked(Action action)
     {
-      //  resetEvent.WaitOne();
-        resetEvent.Reset();
+        manualResetEvent.Reset();
+        resetEvent.WaitOne();
         action();
         resetEvent.Set();
+        manualResetEvent.Set();
     }
 }
